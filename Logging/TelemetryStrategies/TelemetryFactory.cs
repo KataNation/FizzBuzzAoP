@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using Logging.Verbosity;
 
 namespace Logging.TelemetryStrategies
@@ -10,13 +10,23 @@ namespace Logging.TelemetryStrategies
 
     public class TelemetryFactory : ITelemetryFactory
     {
+        private readonly ITelemetryStrategy[] _strategies;
+
+        public TelemetryFactory() : this(new TelemetryException(), new TelemetryEvent()) { }
+
+        public TelemetryFactory(params ITelemetryStrategy[] strategies)
+        {
+            _strategies = strategies;
+        }
+
         public ITelemetryStrategy Strategy(IEventType eventType)
         {
-            if (eventType.ToString() != new EventTypes().Error() &&
-                eventType.ToString() != new EventTypes().Critical()) { return new TelemetryEvent(); }
-
-            Exception exception = new Exception();
-            return new TelemetryException(exception);
+            foreach (ITelemetryStrategy strategy in _strategies)
+            {
+                if (!strategy.Responsible(eventType)) continue;
+                return strategy;
+            }
+            return _strategies.Last();
         }
     }
 }

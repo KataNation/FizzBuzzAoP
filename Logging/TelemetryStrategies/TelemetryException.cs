@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Logging.Verbosity;
 using Microsoft.ApplicationInsights;
 
 namespace Logging.TelemetryStrategies
@@ -8,6 +9,8 @@ namespace Logging.TelemetryStrategies
     {
         private readonly Exception _exception;
         private readonly TelemetryClient _telemetryClient;
+
+        public TelemetryException() : this(new Exception()) { }
 
         public TelemetryException(Exception exception) : this(exception, new TelemetryClient()) { }
 
@@ -20,6 +23,11 @@ namespace Logging.TelemetryStrategies
         public void TrackEvent(string source, Dictionary<string, string> properties)
         {
             _telemetryClient.TrackException(_exception, properties);
+        }
+
+        public bool Responsible(IEventType eventType)
+        {
+            return eventType.ToString().Equals(new EventTypes().Error()) || eventType.ToString().Equals(new EventTypes().Critical());
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Logging.Verbosity;
 using Microsoft.ApplicationInsights;
 
 namespace Logging.TelemetryStrategies
@@ -17,6 +18,11 @@ namespace Logging.TelemetryStrategies
         public void TrackEvent(string source, Dictionary<string, string> properties)
         {
             _telemetryClient.TrackEvent(source, properties);
+        }
+
+        public bool Responsible(IEventType eventType)
+        {
+            return eventType.ToString().Equals(new EventTypes().Information()) || eventType.ToString().Equals(new EventTypes().Warning());
         }
     }
 }
